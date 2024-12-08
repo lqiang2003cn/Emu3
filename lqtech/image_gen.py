@@ -1,4 +1,5 @@
 from PIL import Image
+from huggingface_hub import snapshot_download
 from transformers import AutoTokenizer, AutoModel, AutoImageProcessor, AutoModelForCausalLM
 from transformers.generation.configuration_utils import GenerationConfig
 from transformers.generation import LogitsProcessorList, PrefixConstrainedLogitsProcessor, UnbatchedClassifierFreeGuidanceLogitsProcessor
@@ -12,18 +13,27 @@ os.environ["HF_TOKEN"] = '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'
 EMU_HUB = "BAAI/Emu3-Gen"
 VQ_HUB = "BAAI/Emu3-VisionTokenizer"
 
+
+emu_download_dir = '/root/Emu3/BAAI/Emu3-Gen'
+if not os.path.exists(emu_download_dir):
+    snapshot_download(repo_id=EMU_HUB, local_dir=emu_download_dir)
+
+vq_download_dir = '/root/Emu3/BAAI/Emu3-VisionTokenizer'
+if not os.path.exists(vq_download_dir):
+    snapshot_download(repo_id=VQ_HUB, local_dir=vq_download_dir)
+
 # prepare model and processor
 model = AutoModelForCausalLM.from_pretrained(
-    EMU_HUB,
+    emu_download_dir,
     device_map="cuda:0",
     torch_dtype=torch.bfloat16,
     attn_implementation="flash_attention_2",
     trust_remote_code=True,
 )
 
-tokenizer = AutoTokenizer.from_pretrained(EMU_HUB, trust_remote_code=True, padding_side="left")
-image_processor = AutoImageProcessor.from_pretrained(VQ_HUB, trust_remote_code=True)
-image_tokenizer = AutoModel.from_pretrained(VQ_HUB, device_map="cuda:0", trust_remote_code=True).eval()
+tokenizer = AutoTokenizer.from_pretrained(emu_download_dir, trust_remote_code=True, padding_side="left")
+image_processor = AutoImageProcessor.from_pretrained(vq_download_dir, trust_remote_code=True)
+image_tokenizer = AutoModel.from_pretrained(vq_download_dir, device_map="cuda:0", trust_remote_code=True).eval()
 processor = Emu3Processor(image_processor, image_tokenizer, tokenizer)
 
 # prepare input

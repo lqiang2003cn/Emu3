@@ -4,3 +4,4 @@ flash-attn==2.5.7
 pillow
 gradio==4.44.0
 accelerate
+numpy==1.26.4
