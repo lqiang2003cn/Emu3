@@ -45,7 +45,7 @@ prompt = [p + POSITIVE_PROMPT for p in prompt]
 
 kwargs = dict(
     mode='G',
-    ratio=["1:1", "16:9"],
+    ratio=["16:9", "16:9"],
     image_area=model.config.image_area,
     return_tensors="pt",
     padding="longest",
